@@ -1,21 +1,47 @@
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Box, Cylinder, Sphere } from '@react-three/drei';
+import { useRef, useState } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { Box, Cylinder, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
-export const Lab = () => {
+interface LabProps {
+  onLaptopClick: () => void;
+}
+
+export const Lab = ({ onLaptopClick }: LabProps) => {
   const laptopRef = useRef<THREE.Group>(null);
   const screenRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+  const { gl } = useThree();
   
   useFrame((state) => {
     if (laptopRef.current) {
       laptopRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.05;
+      if (hovered) {
+        laptopRef.current.scale.lerp(new THREE.Vector3(1.05, 1.05, 1.05), 0.1);
+      } else {
+        laptopRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.1);
+      }
     }
     if (screenRef.current) {
       const material = screenRef.current.material as THREE.MeshStandardMaterial;
       material.emissiveIntensity = 0.5 + Math.sin(state.clock.elapsedTime * 2) * 0.2;
     }
   });
+
+  const handleClick = (e: any) => {
+    e.stopPropagation();
+    onLaptopClick();
+  };
+
+  const handlePointerOver = () => {
+    setHovered(true);
+    gl.domElement.style.cursor = 'pointer';
+  };
+
+  const handlePointerOut = () => {
+    setHovered(false);
+    gl.domElement.style.cursor = 'auto';
+  };
 
   return (
     <group>
@@ -30,7 +56,13 @@ export const Lab = () => {
       </mesh>
 
       {/* Laptop Setup */}
-      <group ref={laptopRef} position={[0, 0, 0]}>
+      <group 
+        ref={laptopRef} 
+        position={[0, 0, 0]}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      >
         {/* Table */}
         <Box args={[3, 0.1, 2]} position={[0, -0.05, 0]} castShadow>
           <meshStandardMaterial color="#1a1f2e" roughness={0.7} metalness={0.3} />
@@ -58,6 +90,19 @@ export const Lab = () => {
               metalness={0.8}
             />
           </mesh>
+
+          {/* "Click Me" Text */}
+          {hovered && (
+            <Text
+              position={[0, 0, 0.04]}
+              fontSize={0.15}
+              color="#00fff5"
+              anchorX="center"
+              anchorY="middle"
+            >
+              CLICK TO ACCESS
+            </Text>
+          )}
         </group>
       </group>
 

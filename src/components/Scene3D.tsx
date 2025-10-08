@@ -4,7 +4,11 @@ import { Lab } from './Lab';
 import { Particles } from './Particles';
 import { Suspense } from 'react';
 
-export const Scene3D = () => {
+interface Scene3DProps {
+  onLaptopClick: () => void;
+}
+
+export const Scene3D = ({ onLaptopClick }: Scene3DProps) => {
   return (
     <div className="fixed inset-0 w-full h-full">
       <Canvas
@@ -35,7 +39,7 @@ export const Scene3D = () => {
           <Environment preset="night" />
           
           {/* Scene Elements */}
-          <Lab />
+          <Lab onLaptopClick={onLaptopClick} />
           <Particles />
           
           {/* Controls */}
